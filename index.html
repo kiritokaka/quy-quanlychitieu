@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Ứng Dụng Quỹ & Chi Tiêu</title>
+<style>
+  :root{
+    --bg:#f7f7fb; --ink:#0f172a; --muted:#6b7280; --line:#e5e7eb;
+    --card:rgba(255,255,255,.7); --blur:14px;
+    --pri:#22c55e; --pri-2:#16a34a; --blue:#3b82f6;
+    --chip:#eef2ff; --shadow:0 12px 40px rgba(2,6,23,.08);
+  }
+  [data-theme="dark"]{
+    --bg:radial-gradient(1200px 800px at 20% -10%,#1b2b52,transparent),#0b1020;
+    --ink:#e5e7eb; --muted:#94a3b8; --line:#16233f;
+    --card:rgba(14,22,43,.65); --blur:16px;
+    --chip:#0a1020; --shadow:0 14px 40px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box}  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{max-width:1200px;margin:32px auto;padding:0 20px}
+  .glass{backdrop-filter:saturate(130%) blur(var(--blur));-webkit-backdrop-filter:saturate(130%) blur(var(--blur));background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#16a34a;background:linear-gradient(135deg,#22c55e33,#22c55e11);border:1px solid #22c55e55}
+  h1{margin:0;font-size:24px}  .muted{color:var(--muted)}  .statbar{display:flex;gap:12px;flex-wrap:wrap}
+  .chip{padding:10px 12px;border-radius:12px;background:var(--chip);border:1px solid var(--line);font-weight:700}
+  .grid{display:grid;gap:16px}  @media(min-width:980px){.grid{grid-template-columns:1fr 1fr}}
+  .card{padding:14px}  .card h3{margin:0 0 10px}  .toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+
+  input,select,button{appearance:none;background:transparent;color:inherit;border:1px solid var(--line);padding:10px 12px;border-radius:12px;outline:none;transition:.16s;min-height:44px}
+  input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+  button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .btn{background:transparent} .btn-pri{background:var(--pri);color:#052b16;border-color:#15803d;font-weight:800} .btn-pri:hover{background:var(--pri-2)}
+  .btn-ghost{background:transparent} .btn-danger{background:#fee2e2;border-color:#fecaca;color:#7f1d1d} [data-theme="dark"] .btn-danger{background:#2a0e11;color:#fecaca}
+  .btn-sm{padding:6px 10px;min-height:36px;font-size:13px;border-radius:10px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden} .seg button{border:none;padding:8px 12px} .seg button.active{background:rgba(59,130,246,.12)}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px;border-radius:14px;overflow:hidden}
+  thead th{background:rgba(0,0,0,.03);border-bottom:1px solid var(--line);text-align:left;padding:10px;position:sticky;top:0}
+  [data-theme="dark"] thead th{background:#0c1428}
+  td{border-top:1px solid var(--line);padding:10px;vertical-align:middle}  tbody tr:hover{background:rgba(0,0,0,.02)} [data-theme="dark"] tbody tr:hover{background:#0f1a33}
+  .money{font-weight:800;color:var(--pri)}  .row-note{font-size:12px;color:var(--muted)}
+  .badge{padding:4px 8px;border-radius:999px;border:1px solid;font-weight:700;font-size:12px} .in{background:#ecfdf5;border-color:#bbf7d0;color:#166534} .out{background:#fef2f2;border-color:#fecaca;color:#7f1d1d}
+  [data-theme="dark"] .in{background:#062a12;border-color:#14532d;color:#34d399} [data-theme="dark"] .out{background:#2d0e0e;border-color:#7f1d1d;color:#fca5a5}
+  .bar{position:relative;height:10px;border:1px solid var(--line);border-radius:999px;overflow:hidden} .fill{height:100%;background:linear-gradient(90deg,#ef4444,#f59e0b)}
+
+  .skel{background:linear-gradient(90deg,#e5e7eb,#f3f4f6,#e5e7eb);background-size:200% 100%;animation:sh 1.2s linear infinite;border-radius:8px;height:12px}
+  [data-theme="dark"] .skel{background:linear-gradient(90deg,#0d1428,#101a33,#0d1428)} @keyframes sh{to{background-position:-200% 0}}
+
+  #toast{position:fixed;right:18px;bottom:18px;display:none;min-width:220px} #toast .inner{padding:10px 12px;border-radius:12px;border:1px solid var(--line)}
+  dialog{border:none;border-radius:14px;padding:16px} dialog::backdrop{background:rgba(0,0,0,.35)}
+
+  .toggle{display:flex;align-items:center;gap:8px}
+  .switch{width:46px;height:26px;border-radius:999px;border:1px solid var(--line);position:relative;background:var(--chip)}
+  .knob{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}
+  [data-theme="dark"] .knob{transform:translateX(20px)}
+
+  /* Mobile */
+  @media(max-width:680px){
+    .wrap{padding:0 12px;margin:18px auto}
+    header{flex-direction:column;align-items:flex-start;gap:10px}
+    .statbar{overflow-x:auto;max-width:100%;padding-bottom:6px}
+    .card form{display:grid;grid-template-columns:1fr;gap:10px}
+    input,select,button{width:100%}
+    .seg{width:100%}.seg button{flex:1}
+    .toolbar{align-items:stretch}
+    .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    /* Table -> card */
+    table.responsive thead{display:none}
+    table.responsive tbody tr{display:block;border:1px solid var(--line);border-radius:12px;margin:10px 0}
+    table.responsive tbody td{display:flex;justify-content:space-between;gap:12px;border-top:1px dashed var(--line)}
+    table.responsive tbody td:first-child{border-top:none}
+    table.responsive tbody td::before{content:attr(data-label);font-weight:600;color:var(--muted)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <header>
+    <div class="brand">
+      <div class="logo">₫</div>
+      <div><h1>Ứng Dụng Quỹ & Chi Tiêu</h1><div class="muted">kiểm soát chi tiêu rất nhẹ</div></div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:center;width:100%;justify-content:space-between;flex-wrap:wrap">
+      <div class="statbar">
+        <div class="chip" id="chipBal">Tổng số dư: …</div>
+        <div class="chip" id="chipOut">Đã chi: …</div>
+        <div class="chip" id="chipIn">Đã nạp: …</div>
+      </div>
+      <div class="toggle"><span class="muted" style="font-size:13px">tối/sáng</span><div class="switch glass" id="themeSwitch"><div class="knob"></div></div></div>
+    </div>
+  </header>
+
+  <section class="grid">
+    <div class="glass card">
+      <h3>Tạo quỹ</h3>
+      <form id="f-env">
+        <input name="name" placeholder="Tên quỹ (vd: Ăn uống)" required />
+        <input name="initialAmount" type="number" min="0" step="1000" value="0" title="Số tiền đầu kỳ" />
+        <input name="startDate" type="date" />
+        <input name="endDate" type="date" />
+        <button class="btn btn-pri">Tạo</button>
+      </form>
+      <div class="row-note" style="margin-top:6px">Gợi ý: Ăn uống, Xăng xe, Cafe…</div>
+    </div>
+
+    <div class="glass card">
+      <h3>Ghi giao dịch</h3>
+      <form id="f-tx">
+        <select name="envelopeId" required></select>
+        <div class="seg" id="segDir">
+          <button type="button" class="active" data-dir="out">Chi</button>
+          <button type="button" data-dir="in">Nạp</button>
+        </div>
+        <input name="amount" type="number" min="1000" step="1000" placeholder="Số tiền" required />
+        <input name="who" placeholder="Người (vd: A)" required />
+        <input name="note" placeholder="Ghi chú (tuỳ)" />
+        <button class="btn btn-pri">Ghi</button>
+      </form>
+      <div id="msg" class="row-note" style="margin-top:8px"></div>
+    </div>
+  </section>
+
+  <section class="glass card" style="margin-top:16px">
+    <div class="toolbar">
+      <h3 style="margin:0">Lịch sử giao dịch</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <form id="f-filter" style="display:flex;gap:8px;flex-wrap:wrap">
+          <select name="envHistory" required></select>
+          <input name="who" placeholder="Người (tuỳ)" />
+          <input name="from" type="date" />
+          <input name="to" type="date" />
+          <select name="limit" style="width:120px"><option value="100">100 dòng</option><option value="200" selected>200 dòng</option><option value="500">500 dòng</option></select>
+          <button class="btn btn-ghost">Lọc</button>
+        </form>
+        <div class="seg" style="width:100%">
+          <button type="button" id="qToday">Hôm nay</button>
+          <button type="button" id="q7">7 ngày</button>
+          <button type="button" id="q30">30 ngày</button>
+        </div>
+        <button id="btnCsv" class="btn btn-ghost">⬇ CSV</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="tblTx" class="responsive">
+        <thead><tr><th>Thời gian</th><th>Người</th><th>Loại</th><th>Số tiền</th><th>Ghi chú</th></tr></thead>
+        <tbody><tr><td colspan="5"><div class="skel" style="height:14px"></div></td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="glass card" style="margin-top:16px">
+    <div class="toolbar">
+      <h3 style="margin:0">Danh sách quỹ</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;width:100%">
+        <input id="search" placeholder="Tìm quỹ…"/>
+        <div class="seg" id="sortSeg" style="flex:1">
+          <button type="button" data-sort="name" class="active">Tên</button>
+          <button type="button" data-sort="balance">Còn lại</button>
+          <button type="button" data-sort="total_out">Đã chi</button>
+        </div>
+        <label class="muted" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="chkAll"> Hiện cả quỹ ẩn</label>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="tbl" class="responsive">
+        <thead><tr><th>Quỹ</th><th>Đầu kỳ</th><th>Nạp</th><th>Chi</th><th>Còn lại</th><th>Tiến độ</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+        <tbody><tr><td colspan="8"><div class="skel" style="height:14px"></div></td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<dialog id="confirm" class="glass">
+  <form method="dialog">
+    <h3 id="cfTitle" style="margin:0 0 8px">Xác nhận</h3>
+    <p id="cfText" class="muted" style="margin:0 0 12px"></p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" value="cancel">Hủy</button>
+      <button class="btn btn-danger" value="ok">Đồng ý</button>
+    </div>
+  </form>
+</dialog>
+<div id="toast"><div class="inner glass"></div></div>
+
+<script>
+  const API = (location.port === '3000' ? '' : 'http://localhost:3000') + '/api';
+  const vn = new Intl.NumberFormat('vi-VN'); const fmt = x => vn.format(Number(x||0));
+  const $ = s => document.querySelector(s);
+  const toast=$('#toast'); const showToast=(t,type='ok')=>{toast.querySelector('.inner').textContent=t;toast.style.display='block';toast.querySelector('.inner').style.borderColor=(type==='ok'?'#14532d':'#7f1d1d');setTimeout(()=>toast.style.display='none',2200);};
+  async function jfetch(u,o){const r=await fetch(u,o);const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||r.statusText);return j;}
+
+  const chipBal=$('#chipBal'),chipOut=$('#chipOut'),chipIn=$('#chipIn');
+  const fEnv=$('#f-env'),fTx=$('#f-tx'),fFilter=$('#f-filter');
+  const selTx=fTx.elements['envelopeId'],selHist=fFilter.elements['envHistory'];
+  const tbody=$('#tbl tbody'),tbodyTx=$('#tblTx tbody'); const search=$('#search'),sortSeg=$('#sortSeg'),chkAll=$('#chkAll');
+  const qToday=$('#qToday'),q7=$('#q7'),q30=$('#q30'),btnCsv=$('#btnCsv'); const confirmDlg=$('#confirm'),cfTitle=$('#cfTitle'),cfText=$('#cfText'); const themeSwitch=$('#themeSwitch');
+
+  const state={envelopes:[],filter:{sort:'name',q:'',all:false},dir:'out'};
+  const applyTheme=t=>{document.documentElement.setAttribute('data-theme',t);localStorage.setItem('mb_theme',t);}; applyTheme(localStorage.getItem('mb_theme')||'dark');
+  themeSwitch.onclick=()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  $('#segDir').querySelectorAll('button').forEach(b=>b.onclick=()=>{state.dir=b.dataset.dir;$('#segDir').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));});
+
+  async function loadEnvelopes(){
+    const all = state.filter.all ? '?all=1' : '';
+    const data = await jfetch(`${API}/envelopes${all}`); state.envelopes=data;
+    const sum=data.reduce((a,b)=>({in:a.in+Number(b.total_in||0),out:a.out+Number(b.total_out||0),bal:a.bal+Number(b.balance||0)}),{in:0,out:0,bal:0});
+    chipBal.textContent=`Tổng số dư: ${fmt(sum.bal)}`; chipOut.textContent=`Đã chi: ${fmt(sum.out)}`; chipIn.textContent=`Đã nạp: ${fmt(sum.in)}`;
+    selHist.innerHTML=data.map(r=>`<option value="${r.id}">${r.name}${r.active?'':' (ẩn)'}</option>`).join('');
+    selTx.innerHTML=data.filter(x=>x.active).map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+    renderEnvelopes(); if(data[0]) loadTransactions({envelopeId:selHist.value,limit:fFilter.elements['limit'].value});
+  }
+
+  function renderEnvelopes(){
+    const kw=(state.filter.q||'').toLowerCase(), sort=state.filter.sort;
+    const list=state.envelopes.filter(x=>x.name.toLowerCase().includes(kw)).sort((a,b)=>sort==='name'?a.name.localeCompare(b.name):Number(b[sort])-Number(a[sort]));
+    tbody.innerHTML=list.map(r=>{
+      const init=+r.initial_amount||0,tin=+r.total_in||0,tout=+r.total_out||0,bal=+r.balance||0,cap=Math.max(1,init+tin),used=Math.min(100,Math.max(0,Math.round((tout/cap)*100)));
+      return `<tr>
+        <td data-label="Quỹ"><div style="font-weight:700">${r.name}</div><div class="row-note">${r.active?'':'Quỹ đã ẩn'}</div></td>
+        <td data-label="Đầu kỳ">${fmt(init)}</td>
+        <td data-label="Nạp">${fmt(tin)}</td>
+        <td data-label="Chi">${fmt(tout)}</td>
+        <td data-label="Còn lại" class="money">${fmt(bal)}</td>
+        <td data-label="Tiến độ" style="min-width:160px"><div class="bar"><div class="fill" style="width:${used}%"></div></div><div class="row-note">${used}% đã dùng</div></td>
+        <td data-label="Trạng thái">${r.active?'Đang dùng':'<span class="muted">Đã ẩn</span>'}</td>
+        <td data-label="Hành động">
+          ${r.active?`<button class="btn btn-ghost btn-sm act-hide" data-id="${r.id}">Ẩn</button><button class="btn btn-danger btn-sm act-hard" data-id="${r.id}">Xóa</button>`:
+          `<button class="btn btn-ghost btn-sm act-restore" data-id="${r.id}">Khôi phục</button><button class="btn btn-danger btn-sm act-hard" data-id="${r.id}">Xóa</button>`}
+        </td></tr>`;
+    }).join('') || `<tr><td colspan="8" class="muted">Không có quỹ nào</td></tr>`;
+  }
+
+  async function loadTransactions({envelopeId,who,from,to,limit}={}){
+    const q=new URLSearchParams(); if(envelopeId)q.set('envelopeId',envelopeId); if(who&&who.trim())q.set('who',who.trim());
+    if(from)q.set('from',from); if(to)q.set('to',to); if(limit)q.set('limit',limit);
+    tbodyTx.innerHTML=`<tr><td colspan="5"><div class="skel" style="height:14px"></div></td></tr>`;
+    const tx=await jfetch(`${API}/transactions?`+q.toString());
+    tbodyTx.innerHTML=tx.map(r=>{const when=new Date(r.occurred_at).toLocaleString('vi-VN'); const badge=r.direction==='out'?`<span class="badge out">Chi</span>`:`<span class="badge in">Nạp</span>`;
+      return `<tr><td data-label="Thời gian">${when}</td><td data-label="Người">${r.who}</td><td data-label="Loại">${badge}</td><td data-label="Số tiền">${fmt(r.amount)}</td><td data-label="Ghi chú">${r.note??''}</td></tr>`;
+    }).join('') || `<tr><td colspan="5" class="muted">Chưa có giao dịch</td></tr>`;
+  }
+
+  fEnv.addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(fEnv);
+    const body={name:fd.get('name').trim(),initialAmount:+(fd.get('initialAmount')||0),startDate:fd.get('startDate')||null,endDate:fd.get('endDate')||null};
+    try{await jfetch(`${API}/envelopes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});fEnv.reset();showToast('Đã tạo quỹ ✔');loadEnvelopes();}catch(err){alert('Lỗi: '+err.message);}
+  });
+
+  fTx.addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(fTx);
+    const body={envelopeId:fd.get('envelopeId'),direction:state.dir,amount:+fd.get('amount'),who:fd.get('who').trim(),note:(fd.get('note')||'').trim()};
+    try{const r=await jfetch(`${API}/transactions`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      fTx.reset();showToast('Đã ghi ✔ Còn lại: '+fmt(r.newBalance));loadEnvelopes();loadTransactions({envelopeId:body.envelopeId});}catch(err){showToast('Lỗi: '+err.message,'warn');}
+  });
+
+  fFilter.addEventListener('submit',e=>{e.preventDefault();const fd=new FormData(fFilter);
+    loadTransactions({envelopeId:fd.get('envHistory'),who:fd.get('who'),from:fd.get('from'),to:fd.get('to'),limit:fd.get('limit')});});
+  const setRange=d=>{const to=new Date();const from=new Date();from.setDate(to.getDate()-(d-1));
+    fFilter.elements['from'].value=from.toISOString().slice(0,10);fFilter.elements['to'].value=to.toISOString().slice(0,10);fFilter.requestSubmit();};
+  qToday.onclick=()=>setRange(1); q7.onclick=()=>setRange(7); q30.onclick=()=>setRange(30);
+
+  btnCsv.onclick=()=>{const rows=[...$('#tblTx tbody').querySelectorAll('tr')].map(tr=>[...tr.children].map(td=>td.innerText));
+    if(!rows.length)return;const csv=rows.map(r=>r.map(x=>`"${x.replace(/"/g,'""')}"`).join(',')).join('\r\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='transactions.csv';a.click();};
+
+  const ask=(title,text)=>new Promise(r=>{cfTitle.textContent=title;cfText.textContent=text;confirmDlg.showModal();confirmDlg.addEventListener('close',()=>r(confirmDlg.returnValue==='ok'),{once:true});});
+  tbody.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.id;
+    try{
+      if(b.classList.contains('act-hide')){if(await ask('Ẩn quỹ?','Giữ giao dịch, có thể khôi phục.')){await jfetch(`${API}/envelopes/${id}`,{method:'DELETE'});showToast('Đã ẩn quỹ');loadEnvelopes();}}
+      else if(b.classList.contains('act-restore')){await jfetch(`${API}/envelopes/${id}/restore`,{method:'PATCH'});showToast('Đã khôi phục');loadEnvelopes();}
+      else if(b.classList.contains('act-hard')){if(await ask('XÓA HẲN quỹ?','Sẽ xóa cả giao dịch, không hoàn tác.')){await jfetch(`${API}/envelopes/${id}?hard=1`,{method:'DELETE'});showToast('Đã xóa','warn');loadEnvelopes();}}
+    }catch(err){showToast('Lỗi: '+err.message,'warn');}
+  });
+
+  const pref=JSON.parse(localStorage.getItem('mb_pref')||'{}'); state.filter.sort=pref.sort||'name'; state.filter.q=pref.q||''; state.filter.all=!!pref.all;
+  search.value=state.filter.q; chkAll.checked=state.filter.all;
+  search.oninput=()=>{state.filter.q=search.value;localStorage.setItem('mb_pref',JSON.stringify({sort:state.filter.sort,q:state.filter.q,all:chkAll.checked}));renderEnvelopes();};
+  chkAll.onchange=()=>{state.filter.all=chkAll.checked;localStorage.setItem('mb_pref',JSON.stringify({sort:state.filter.sort,q:state.filter.q,all:chkAll.checked}));loadEnvelopes();};
+  sortSeg.querySelectorAll('button').forEach(b=>b.onclick=()=>{state.filter.sort=b.dataset.sort;sortSeg.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));localStorage.setItem('mb_pref',JSON.stringify({sort:state.filter.sort,q:state.filter.q,all:chkAll.checked}));renderEnvelopes();});
+
+  loadEnvelopes();
+</script>
+</body>
+</html>
